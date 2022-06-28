@@ -24,7 +24,8 @@
     <link rel="preload" as="font" href="{{ base_font_bold | font_url }}" type="font/woff2" crossorigin>
     <link rel="preload" href="{{ 'theme.js' | asset_url }}" as="script">
     <link rel="preload" href="{{ 'lazysizes.js' | asset_url }}" as="script">
-  
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
+    </script>
     {%- if canonical_url != blank  -%}
       <link rel="canonical" href="{{ canonical_url }}">
     {%- endif -%}
@@ -218,7 +219,6 @@
     
     <div id="atc_popup">
     <div class="faq-overlay cross" style="display: block;"></div>
-    <img width="100%" src="{{ "Spinner-3.gif" | asset_url }}">
     <div class="inner-atc-popup">
       
       <img src="{{'cross.webp' | asset_url }}" class="cross">
@@ -233,8 +233,6 @@
     </div>
   </div>
     
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
-  </script>
     <script>
         $(".cross").click(function(){
     $("body").removeClass("fixed-body");

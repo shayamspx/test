@@ -1,153 +1,21 @@
-<link rel="stylesheet" href='{{ "slick.min.css" | asset_url }}'/>
-<link rel="stylesheet" href='{{ "slick-theme.min.css" | asset_url }}'/>
-<style>
-  .product-block-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #fff;
-    margin-left: 5px;
-    margin-right: 5px;
-    padding-bottom: 30px;
-    text-align: center;
-    height: 100%;
-    justify-content: space-between;
-}
-  .product-slider-main{
-  	background-color: #ebebeb;
-  }
-.page-width.product-slider {
-  
-  padding: 55px;
-}
-.product-block-inner img {
-  max-width: 200px;
-  width: 100%;
-}
-.faq-overlay{
-   position: fixed;
-    z-index: 1002;
-    overflow-y: auto;
-    transition: opacity .3s ease 0s;
-    background-color: #0009;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: auto;
-    right: auto;
-    display: none;
-    z-index:1;
-}
-#atc_popup{
-  display: none;
-}
-.inner-atc-popup {
-  position: relative;
-  max-width: 450px;
-  width: 100%;
-  transform: translate(-50%, -50%);
-  left: 50%;
-  text-align: center;
-  
-}
-.inner-atc-popup .cross{
-   max-width: 21px;
-    position: absolute;
-    right: 10px;
-    top: 8px;
-    cursor: pointer;
-}
-.inner-atc-popup img {
-  max-width: 60px;
-  width: 100%;
-}
-.inner-atc-popup {
-  z-index:2;
-  position:fixed;
-  max-width: 450px;
-  width: 100%;
-  transform: translate(-50%, -50%);
-  left: 50%;
-  text-align: center;
-  border-top: 4px solid #000;
-  padding: 32px 12px;
-  background-color: #fff;
-  top: 50%;
-}
-.pop-btns {
-  display: flex;
-  justify-content: space-between;
-}
-.pop-btns a {
-  width: calc(50% - 10px);
-}
-.pop-shop {
-  background-color: #000;
-  padding: 15px;
-  color: #fff;
-}
-.pop-cart {
-  background-color: #996515;
-  padding: 15px;
-  color: #fff;
-}
-.product-slider .slick-next:before {
-  content: '\203A';
-  font-size: 36px;
-  color: #000;
-}
-.product-slider .slick-prev:before {
-  content: '\2039';
-  font-size: 36px;
-  color: #000;
-}
-.slick-track {
-  display: flex !important;
-}
-.slick-slide
-{
-    height: inherit !important;
-}
-.slider-heading {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.5rem;
-}
-.product-block-inner button, .product-block-inner a.atc-button  {
-  background-color: #000;
-  border: none;
-  width: calc(100% - 20px);
-  padding: 10px;
-  color: #fff;
-}
-  
-  .fixed-body {
-    overflow: hidden;
-    padding-right: 17px;
-}
-.site-header{
-	z-index: 0;
-}
-.slick-dots{
-  bottom: inherit;
-}
-.slick-dots li button:before{
-  font-size: 17px;
-}
-</style>
+{{ 'slick.min.css' | asset_url | stylesheet_tag }}
+{{ 'slick-theme.min.css' | asset_url | stylesheet_tag }}
+{{ 'custom-product-slider.css' | asset_url | stylesheet_tag }}
+
 <div class="product-slider-main">
   <div class="page-width product-slider">
     <div class="product-slider-inner">
-      {% assign get_url = collections[section.settings.collection] %}
+      {% assign featured_collection = collections[section.settings.collection] %}
       <div class="slider-heading">
         <h2>{{ section.settings.title }}</h2>
-        <a href="{{get_url.url}}">View All</a>
+        <a href="{{ featured_collection.url }}">View All</a>
       </div>
       <div class="slider-listing" style="display:none">
-        {% for product in get_url.products %}
+        {% assign product_limit = section.settings.limit_product %}
+        {% for product in featured_collection.products limit: product_limit %}
           <div class="product-block">
             <div class="product-block-inner">
-              <img width="100" height="auto" src="/{{ product.featured_image | img_url: 'master' }}" >
+              <img width="100" height="auto" src="{{ product.featured_image | img_url: '220x' }}" >
               <a href="{{ product.url }}">{{ product.title }}</a>
               <p>{{ product.price | money }}</p>
               {% if product.variants.size > 1 %}
@@ -163,15 +31,59 @@
   </div>
 </div>
 
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
-</script>
 <script src='{{ "slick.min.js" | asset_url }}'></script>
 
 <script>
+  
+  $(document).click(function(e){
+    var container = $("#atc_popup");
+    if (!container.is(e.target) && container.has(e.target).length === 0) 
+    {
+	  container.hide();
+      
+    }
+  });
+  function sliderATC(productHandle,variantID){
+    
+    $.getJSON(window.Shopify.routes.root + `products/${productHandle}.js`, function(product) {
+        let formattedPrice = Shopify.formatMoney(product.price, '{{ shop.money_with_currency_format }}')
+        $("#pop_title").html(product.title);
+        $("#pop_img").attr("src",product.featured_image);
+        $("#pop_price").html(formattedPrice);
+      	$("#atc_popup").show();
+        $("body").addClass("fixed-body");
+    });
+    $.ajax({
+      type: 'POST',
+      url: '/cart/add.js',
+      data: {
+        quantity: 1,
+        id: variantID
+      },
+      dataType: 'json', 
+      success: function (data) { 
+        cartUpdate();
+       } 
+       });
+  }
+
+  function cartUpdate(){
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        url: '/cart.json',
+        success: function(cart){
+            var cartCount = cart.item_count;
+            if(cart.item_count > 0){
+              $("#CartCount").removeClass("hide");
+            }
+            $('#CartCount span').html(cartCount);
+        }
+    });
+  }
+
   $(document).ready(function(){
       $(".slider-listing").show();
-      console.log("working");
   });
   $('.slider-listing').slick({
     dots: false,
@@ -206,53 +118,6 @@
       }
     ]
   });
-
-  $(document).click(function(e){
-    var container = $("#atc_popup");
-    if (!container.is(e.target) && container.has(e.target).length === 0) 
-    {
-	  container.hide();
-      
-    }
-  });
-  function sliderATC(productHandle,variantID){
-    
-    $.getJSON(window.Shopify.routes.root + `products/${productHandle}.js`, function(product) {
-        let formattedPrice = Shopify.formatMoney(product.price, '{{ shop.money_with_currency_format }}')
-        $("#pop_title").html(product.title);
-        $("#pop_img").attr("src",product.featured_image);
-        $("#pop_price").html(formattedPrice);
-      	$("#atc_popup").show();
-        $("body").addClass("fixed-body");
-    });
-    $.ajax({
-      type: 'POST',
-      url: '/cart/add.js',
-      data: {
-        quantity: 1,
-        id: variantID
-      },
-      dataType: 'json', 
-      success: function (data) { 
-        cartUpdate();
-       } 
-       });
-  }
-  function cartUpdate(){
-    $.ajax({
-        type: 'GET',
-        dataType: 'json',
-        url: '/cart.json',
-        success: function(cart){
-            var cartCount = cart.item_count;
-            if(cart.item_count > 0){
-              $("#CartCount").removeClass("hide");
-            }
-            $('#CartCount span').html(cartCount);
-        }
-    });
-  }
-
  
   
 </script>
@@ -267,17 +132,27 @@
         "label": "Heading",
         "default": "New Arrivals"
       },
-	  {
+	    {
         "type": "collection",
         "id": "collection",
         "label": "Collection"
+      },
+      {
+        "type": "range",
+        "id": "limit_product",
+        "min": 5,
+        "max": 16,
+        "step": 1,
+        "unit": "px",
+        "label": "Show Product",
+        "default": 8
       }
-	],
+	  ],
     "presets": [
-       {
-         "name": "Custom Product Slider"
-	   }
-     ]
+      {
+        "name": "Custom Product Slider"
+	    }
+    ]
   }
 {% endschema %}
 
