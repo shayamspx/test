@@ -10,6 +10,9 @@
         <h2>{{ section.settings.title }}</h2>
         <a href="{{ featured_collection.url }}">View All</a>
       </div>
+      <div id="sliderPreloader">
+        <img src="{{ 'Spinner-3.gif' | asset_url }}">
+      </div>
       <div class="slider-listing" style="display:none">
         {% assign product_limit = section.settings.limit_product %}
         {% for product in featured_collection.products limit: product_limit %}
@@ -39,8 +42,7 @@
     var container = $("#atc_popup");
     if (!container.is(e.target) && container.has(e.target).length === 0) 
     {
-	  container.hide();
-      
+	    container.hide();
     }
   });
   function sliderATC(productHandle,variantID){
@@ -50,8 +52,14 @@
         $("#pop_title").html(product.title);
         $("#pop_img").attr("src",product.featured_image);
         $("#pop_price").html(formattedPrice);
+        $(".inner-atc-popup").hide();
       	$("#atc_popup").show();
+        $("#preloader").show();
         $("body").addClass("fixed-body");
+        setTimeout(function(){
+          $("#preloader").hide();
+          $(".inner-atc-popup").show();
+        },700);
     });
     $.ajax({
       type: 'POST',
@@ -63,8 +71,8 @@
       dataType: 'json', 
       success: function (data) { 
         cartUpdate();
-       } 
-       });
+      } 
+    });
   }
 
   function cartUpdate(){
@@ -84,6 +92,7 @@
 
   $(document).ready(function(){
       $(".slider-listing").show();
+      $("#sliderPreloader").hide();
   });
   $('.slider-listing').slick({
     dots: false,

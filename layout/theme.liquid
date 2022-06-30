@@ -197,7 +197,6 @@
   
       <main class="main-content js-focus-hidden" id="MainContent" role="main" tabindex="-1">
         {{ content_for_layout }}
-  <limespot></limespot>
       </main>
   
       {% section 'footer' %}
@@ -219,7 +218,10 @@
     
     <div id="atc_popup">
     <div class="faq-overlay cross" style="display: block;"></div>
-    <div class="inner-atc-popup">
+    <div id="preloader">
+      <img src="{{ 'Spinner-3.gif' | asset_url }}">
+    </div>
+    <div class="inner-atc-popup" style="display:none;">
       
       <img src="{{'cross.webp' | asset_url }}" class="cross">
       
@@ -234,10 +236,10 @@
   </div>
     
     <script>
-        $(".cross").click(function(){
-    $("body").removeClass("fixed-body");
-       $("#atc_popup").hide();
-  });
+      $(".cross").click(function(){
+        $("body").removeClass("fixed-body");
+          $("#atc_popup").hide();
+      });
     </script>
     
     </body>
