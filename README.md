@@ -1,4 +1,4 @@
 preview link
-https://fbw4gqcmno9xu27i-52357398692.shopifypreview.com
+https://o9d5rx09q4fzphnj-52357398692.shopifypreview.com
 
 Password: test
